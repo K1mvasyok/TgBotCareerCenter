@@ -7,9 +7,9 @@ async def menu():
             [KeyboardButton(text="📖 "), KeyboardButton(text="📚 ")],
             [KeyboardButton(text="🎓 "), KeyboardButton(text="📅 ")],], 
         resize_keyboard=True, input_field_placeholder="Выберите пункт ниже")
-
-@router_u.callback_query(F.data.startswith("return_to_menu"))
-async def Return_to_menu(query: types.CallbackQuery):
-    await query.message.answer('🔮 Главное меню', reply_markup=await kb.menu())
+    
+# Клавиатура для возврата в меню
+async def return_to_menu():
+    return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🏡 Вернуться в меню", callback_data="return_to_menu")]])
     
 # Клавиатура со списком потоков 
