@@ -11,17 +11,17 @@ router_a = Router()
 async def Start_commands_for_admin(message: Message) -> None:
     if message.from_user.id == ADMIN_TELEGRAM_ID:
         await message.answer(f"Список всех доступных команд\n\n"
-                             f"/potok - \n\n"
+                             f"/kurs - \n\n"
                              f"/groups - \n\n"
                              f"/ - \n\n"
                              f"/ - \n\n")                       
     else:
         await message.answer("У вас нет прав на выполнение этой команды.")
 
-@router_a.message(Command(""))
-async def Start(message: Message):
+@router_a.message(Command("kurs"))
+async def Kurs(message: Message):
     if message.from_user.id == ADMIN_TELEGRAM_ID:
-        await message.answer(f'', reply_markup=await kb.airlines_adm())  
+        await message.answer(f'Выберите курс которому вы бы хотели написать', reply_markup=await kb.kurs())  
     else:
         await message.answer("У вас нет прав на выполнение этой команды.")
 
