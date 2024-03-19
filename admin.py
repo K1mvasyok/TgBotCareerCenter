@@ -1,5 +1,6 @@
 from aiogram import Router, F
-from aiogram.types import Message, Command, CallbackQuery
+from aiogram.types import Message, CallbackQuery
+from aiogram.filters import Command
 
 import keyboards as kb
 from config import ADMIN_TELEGRAM_ID
