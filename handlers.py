@@ -1,5 +1,5 @@
 from aiogram import F, Router
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from aiogram.filters import CommandStart
 
 router = Router()
@@ -19,7 +19,6 @@ async def Potok(message: Message):
     await message.answer(f'Выберите поток, чтобы написать сообщение для него:', reply_markup=await kb.menu())
 
 # Обработка нажатия на поток
-@router_u.callback_query(F.data.startswith("potok_id:"))
-async def Show_potok(query: types.CallbackQuery):
+@router.callback_query(F.data.startswith("potok_id:"))
+async def Show_potok(query: CallbackQuery):
     potok = int(query.data.split(":")[1])
-    disciplines = await get_disciplines_by_semester(semester) 
