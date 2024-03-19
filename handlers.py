@@ -13,3 +13,4 @@ async def Cmd_start(message: Message):
                              f'• \n\n')
     await message.answer(f'🔮 Главное меню', reply_markup=await kb.menu())
 
+# Зарегистрируйся а то как лох
