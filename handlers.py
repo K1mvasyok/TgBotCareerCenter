@@ -21,22 +21,25 @@ async def Cmd_start(message: Message):
     await message.answer(f'Привет 👋🏼,\nЯ - чат-бот \n\n'
                              f'Я могу показать: \n\n'
                              f'• \n\n')
-    # await message.answer(f'🔮 Главное меню', reply_markup=await kb.menu())
+    await message.answer(f'🔮 Главное меню', reply_markup=await kb.menu())
 
 @router_u.message(F.text == '📌 Регистрация')
-async def cmd_register(message: Message, state: FSMContext) -> None: 
+async def Cmd_register(message: Message, state: FSMContext) -> None: 
     user_id = message.from_user.id
     if await is_user_registered_db(user_id):
         await message.answer("Вы уже зарегистрированы.")
     else:
-        await message.answer("Для регистрации введите свои данные: серию и номер паспорта без пробела")
-        await state.set_state(AddNewUser.passport)
+        await message.answer("Выберете свой курс", reply_markup=await kb.kurs_registration())
         
-@router_u.message(AddNewUser.passport)
-async def process_passport(message: Message, state: FSMContext) -> None:
-    await state.update_data(passport=message.text)
-    await message.answer("Теперь введите ваше ФИО.")
-    await state.set_state(AddNewUser.fio_klient)
+@router_u.callback_query(F.data.startswith("reg.kurs.number_"))
+async def Process_kurs(query: CallbackQuery, state: FSMContext):
+
+    kurs = int(query.data.split("_")[1])
+    await query.message.answer(f'Kurs - {kurs}')
+    
+    await state.update_data(kurs=kurs)
+    
+    await query.message.answer("Выберете своё направление", reply_markup=await kb.kurs_registration())
 
 @router_u.message(AddNewUser.fio_klient)
 async def process_fio(message: Message, state: FSMContext) -> None:
