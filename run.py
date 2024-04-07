@@ -8,6 +8,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 import handlers
 import admin
 
+from models import async_main
 
 async def main():
     bot = Bot(token=TOKEN, parse_mode='HTML')
@@ -21,6 +22,7 @@ async def main():
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     try:
+        asyncio.run(async_main())
         asyncio.run(main())
     except (KeyboardInterrupt):
         print('Bot stopped!')

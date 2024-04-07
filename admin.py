@@ -8,14 +8,14 @@ from config import ADMIN_TELEGRAM_ID
 router_a = Router()
 
 @router_a.message(Command("commands"))
-async def Cmd_start(message: Message):
+async def Cmd_commands(message: Message):
     if message.from_user.id == ADMIN_TELEGRAM_ID:
         await message.answer(f'Привет 👋🏼,\nЯ - чат-бот \n\n'
                              f'Через меня можно написать ?сообщение?: \n\n'
                              f'• Курсу\n\n'
                              f'• Потоку\n\n'
                              f'• Или конкретной группе\n\n')
-        await message.answer(f'🔮 Главное меню', reply_markup=await kb.menu())
+        await message.answer(f'🔮 Главное меню', reply_markup=await kb.menu_a())
     else:
         await message.answer("У вас нет прав на выполнение этой команды.")
 
@@ -28,7 +28,7 @@ async def Kurs(message: Message):
         await message.answer("У вас нет прав на выполнение этой команды.")
 
 @router_a.callback_query(F.data.startswith("kurs.number"))
-async def Kyrs_bottons_act(query: CallbackQuery):
+async def Kurs_bottons_act(query: CallbackQuery):
     kurs = int(query.data.split("_")[1])
     await query.message.answer(f'Kurs - {kurs}')
     

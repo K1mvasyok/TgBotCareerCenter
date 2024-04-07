@@ -1,3 +1,5 @@
 TOKEN = '5597665832:AAEZjocB9_hbyX3CiIHleESxGPv8bGjRYaA'
 
 ADMIN_TELEGRAM_ID = 768886416
+
+SQLALCHEMY_URL = "sqlite+aiosqlite:///db.sqlite"
