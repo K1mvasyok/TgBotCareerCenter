@@ -18,10 +18,11 @@ class AddNewUser(StatesGroup):
 
 @router_u.message(CommandStart())
 async def Cmd_start(message: Message):
+    user_id = message.from_user.id
     await message.answer(f'Привет 👋🏼,\nЯ - чат-бот \n\n'
                              f'Я могу показать: \n\n'
                              f'• \n\n')
-    await message.answer(f'🔮 Главное меню', reply_markup=await kb.menu())
+    await message.answer(f'🔮 Главное меню', reply_markup=await kb.menu_u(user_id))
 
 @router_u.message(F.text == '📌 Регистрация')
 async def Cmd_register(message: Message, state: FSMContext) -> None: 
@@ -33,27 +34,11 @@ async def Cmd_register(message: Message, state: FSMContext) -> None:
         
 @router_u.callback_query(F.data.startswith("reg.kurs.number_"))
 async def Process_kurs(query: CallbackQuery, state: FSMContext):
-
     kurs = int(query.data.split("_")[1])
-    await query.message.answer(f'Kurs - {kurs}')
-    
     await state.update_data(kurs=kurs)
     
     await query.message.answer("Выберете своё направление", reply_markup=await kb.kurs_registration())
 
-@router_u.message(AddNewUser.fio_klient)
-async def process_fio(message: Message, state: FSMContext) -> None:
-    await state.update_data(fio_klient=message.text)
-    await message.answer("Теперь введите ваш адрес.")
-    await state.set_state(AddNewUser.adress)
-
-@router_u.message(AddNewUser.adress)
-async def process_address(message: Message, state: FSMContext) -> None:
-    await state.update_data(address=message.text)
-    await message.answer("Теперь введите ваш номер телефона цифрами")
-    await state.set_state(AddNewUser.phone_number)
-
-@router_u.message(AddNewUser.phone_number)
 async def process_phone(message: Message, state: FSMContext) -> None:
     await state.update_data(phone_number=message.text)
     data = await state.get_data()

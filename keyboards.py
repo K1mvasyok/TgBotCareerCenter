@@ -1,6 +1,6 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
-from requests import user_registered_func
+from requests import is_user_registered_db
 
 async def menu_a():
     return ReplyKeyboardMarkup(
@@ -10,7 +10,7 @@ async def menu_a():
         resize_keyboard=True, input_field_placeholder="Выберите пункт ниже")
 
 async def menu_u(user_id):
-    is_user_registered = await user_registered_func(user_id)
+    is_user_registered = await is_user_registered_db(user_id)
     registration_button = [KeyboardButton(text="📌 Регистрация")] if not is_user_registered else []
     profile_button = [KeyboardButton(text="📋 Моя анкета")] if is_user_registered else []
     return ReplyKeyboardMarkup(keyboard=[registration_button + profile_button], resize_keyboard=True, input_field_placeholder="Выберите пункт ниже")
