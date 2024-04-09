@@ -44,27 +44,18 @@ async def Process_direction(query: CallbackQuery, state: FSMContext):
     await state.update_data(direction=direction)
     await query.message.answer("Выберете свою группу", reply_markup=await kb.directions())
 
-async def process_phone(message: Message, state: FSMContext) -> None:
-    await state.update_data(phone_number=message.text)
+@router_u.callback_query(F.data.startswith("reg.direction_"))
+async def Process_group(query: CallbackQuery, state: FSMContext):
+    group = int(query.data.split("_")[1])
+    await state.update_data(group=group)
     data = await state.get_data()
     message_text = (
         f"Спасибо за регистрацию!\n\n"
-        f"Паспорт: <b>{data['passport']}</b>\n"
-        f"ФИО: <b>{data['fio_klient']}</b>\n"
-        f"Адрес: <b>{data['address']}</b>\n"
-        f"Номер телефона: <b>{data['phone_number']}</b>\n\n"
-        f"Если все верно, нажмите на кнопку снизу")
-    await message.answer(message_text, reply_markup=await kb.register_user())
+        f"Курс: <b>{data['kurs']}</b>\n"
+        f"Направление: <b>{data['direction']}</b>\n"
+        f"Группа: <b>{data['group']}</b>\n")
+    await query.message.answer(message_text)
 
-@router_u.callback_query(F.data.startswith("register"))
-async def register_user(query: CallbackQuery, state: FSMContext):
-    user_id = query.from_user.id
-    data = await state.get_data()
-    await save_user_to_db(query.from_user.id, data)
-    await state.clear()
-    await query.message.answer("Регистрация завершена. Спасибо за регистрацию!")
-    await query.message.answer("🔮 Главное меню", reply_markup=await kb.menu(user_id, is_user_registered_db))
-    
 @router_u.message(F.text == '📋 Моя анкета')
 async def view_profile(message: Message):
     user_id = message.from_user.id
@@ -72,8 +63,7 @@ async def view_profile(message: Message):
     if user_data:
         profile_text = (
             f"📋 Ваша анкета:\n\n"
-            f"Паспорт: <b>{user_data.passport}</b>\n"
-        )
-        await message.answer(profile_text, reply_markup=await kb.menu(user_id))
+            f"Паспорт: <b>{user_data.passport}</b>\n")
+        await message.answer(profile_text, reply_markup=await kb.menu_u(user_id))
     else:
         await message.answer("Ваша анкета не найдена. Возможно, вы еще не зарегистрированы.")
