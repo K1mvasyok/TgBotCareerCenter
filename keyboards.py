@@ -1,6 +1,6 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
-from requests import is_user_registered_db
+from requests import is_user_registered_db, get_direction
 
 async def menu_a():
     return ReplyKeyboardMarkup(
@@ -42,3 +42,8 @@ async def kurs_registration():
         InlineKeyboardButton(text="4 Курс", callback_data=f"reg.kurs.number_4")],
         [InlineKeyboardButton(text="🏡 Вернуться в меню", callback_data="return_to_menu")]]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+async def directions():
+    direction = await get_direction()
+    keyboard = [[InlineKeyboardButton(text=direction.name, callback_data=f'reg.direction_{direction.id}')] for direction in direction]
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)

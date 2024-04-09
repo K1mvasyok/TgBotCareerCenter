@@ -36,8 +36,13 @@ async def Cmd_register(message: Message, state: FSMContext) -> None:
 async def Process_kurs(query: CallbackQuery, state: FSMContext):
     kurs = int(query.data.split("_")[1])
     await state.update_data(kurs=kurs)
-    
-    await query.message.answer("Выберете своё направление", reply_markup=await kb.kurs_registration())
+    await query.message.answer("Выберете своё направление", reply_markup=await kb.directions())
+
+@router_u.callback_query(F.data.startswith("reg.direction_"))
+async def Process_direction(query: CallbackQuery, state: FSMContext):
+    direction = int(query.data.split("_")[1])
+    await state.update_data(direction=direction)
+    await query.message.answer("Выберете свою группу", reply_markup=await kb.directions())
 
 async def process_phone(message: Message, state: FSMContext) -> None:
     await state.update_data(phone_number=message.text)

@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from models import async_session
 
-from models import User
+from models import User, Direction
 
 async def is_user_registered_db(telegram_id):
     async with async_session as session:
@@ -25,3 +25,7 @@ async def get_user_data(telegram_id):
         user = result.scalar()
         return user
 
+async def get_direction():
+    async with async_session as session:
+        result = await session.execute(select(Direction))
+        return result.scalars().all()
