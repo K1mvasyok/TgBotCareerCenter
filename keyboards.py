@@ -28,11 +28,6 @@ async def kurs():
         InlineKeyboardButton(text="4 Курс", callback_data=f"kurs.number_4")],
         [InlineKeyboardButton(text="🏡 Вернуться в меню", callback_data="return_to_menu")]]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
-
-async def register_user():
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✅ Всё верно", callback_data="register")],
-        [InlineKeyboardButton(text="ЕСТЬ ОШИБКА", callback_data="neznay")]])
     
 async def kurs_registration():
     buttons = [
@@ -51,4 +46,9 @@ async def directions():
 async def group(course_id, direction_id):
     group = await get_groups_by_course_and_direction(course_id, direction_id)
     keyboard = [[InlineKeyboardButton(text=group.name, callback_data=f'reg.group_{group.id}')] for group in group]
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+async def ready(kurs_id):
+    keyboard = [[InlineKeyboardButton(text="✅ Готово", callback_data="kurs.ready")],
+                [InlineKeyboardButton(text="↩️ Написать еще раз", callback_data=f"mes.kurs.number_{kurs_id}")]]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)

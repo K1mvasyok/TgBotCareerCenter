@@ -18,6 +18,8 @@ async def main():
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
     
+async def get_bot():
+    return Bot(token=TOKEN, parse_mode='HTML')
     
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
@@ -26,3 +28,4 @@ if __name__ == '__main__':
         asyncio.run(main())
     except (KeyboardInterrupt):
         print('Bot stopped!')
+        

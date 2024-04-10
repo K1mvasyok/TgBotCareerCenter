@@ -4,6 +4,8 @@ from aiogram.filters import Command
 
 import keyboards as kb
 from config import ADMIN_TELEGRAM_ID
+from requests import get_users_by_course
+from run import get_bot
 
 router_a = Router()
 
@@ -27,14 +29,34 @@ async def Kurs(message: Message):
     else:
         await message.answer("У вас нет прав на выполнение этой команды.")
 
-@router_a.callback_query(F.data.startswith("kurs.number"))
+@router_a.callback_query(F.data.startswith("mes.kurs.number_"))
+@router_a.callback_query(F.data.startswith("kurs.number_"))
 async def Kurs_bottons_act(query: CallbackQuery):
-    kurs = int(query.data.split("_")[1])
-    await query.message.answer(f'Kurs - {kurs}')
+    kurs_id = int(query.data.split("_")[1])
+    await query.message.answer(f'Введите сообщение для Курса', reply_markup=await kb.ready(kurs_id))  
     
+# Функция отправки сообщения пользователю
+async def send_message_to_user(user_id, message_text):
+    bot = await get_bot()
+    try:
+        await bot.send_message(user_id, message_text)
+        return True  
+    except Exception as e:
+        print(f"Не удалось отправить сообщение пользователю с ID {user_id}: {e}")
+        return False   
     
-# Работа для написания текста Потоку
-# План: Кнопка-Хэдлер
+@router_a.callback_query(F.data.startswith("kurs.ready"))
+async def Kurs_ready_act(query: CallbackQuery):
+    kurs_id = int(query.data.split("_")[1])
+    
+    users = await get_users_by_course(kurs_id)
+    
+    if users:
+            message_text = query.message.text
+            await send_message_to_user(users, message_text)
+            await query.message.answer("Сообщение успешно отправлено всем пользователям курса")
+    else:
+            await query.message.answer("На выбранный курс не подписан ни один пользователь")
 
 
 # Работа для написания текста Группе

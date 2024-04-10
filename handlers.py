@@ -43,21 +43,16 @@ async def Process_kurs(query: CallbackQuery, state: FSMContext):
 async def Process_direction(query: CallbackQuery, state: FSMContext):
     direction_id = int(query.data.split("_")[1])
     await state.update_data(direction=direction_id)
-    
     data = await state.get_data()
     course_id = data["kurs"]
-    
     await query.message.answer("Выберете свою группу", reply_markup=await kb.group(course_id , direction_id))
 
 @router_u.callback_query(F.data.startswith("reg.group_"))
 async def Process_group(query: CallbackQuery, state: FSMContext):
     group = int(query.data.split("_")[1])
     data = await state.get_data()
-    
     result, text = await save_new_user(data["telegram_id"], data["kurs"], data["direction"], group)
-    
     message_text = text
-    
     if result is True:
         group_name, direction_name, course_name = await get_group_info_by_id(group)
         message_text += (
@@ -65,12 +60,11 @@ async def Process_group(query: CallbackQuery, state: FSMContext):
             f"Курс: <b>{course_name}</b>\n"
             f"Направление: <b>{direction_name}</b>\n"
             f"Группа: <b>{group_name}</b>\n")
-
     await query.message.answer(message_text)
     await query.message.answer(f'🔮 Главное меню', reply_markup=await kb.menu_u(data['telegram_id']))
 
 @router_u.message(F.text == '📋 Моя анкета')
-async def view_profile(message: Message):
+async def View_profile(message: Message):
     user_id = message.from_user.id
     user_data = await get_user_info_by_telegram_id(user_id)
     if user_data:

@@ -78,3 +78,10 @@ async def get_user_info_by_telegram_id(telegram_id):
             return user_info
         else:
             return None
+        
+async def get_users_by_course(course_id):
+    async with async_session() as session:
+        users = await session.execute(
+            select(User).join(Group).filter(Group.course_id == course_id)
+        )
+        return users.scalars().all()
