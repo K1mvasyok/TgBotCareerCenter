@@ -1,6 +1,6 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
-from requests import is_user_registered_db, get_direction, get_group
+from requests import is_user_registered_db, get_direction, get_groups_by_course_and_direction
 
 async def menu_a():
     return ReplyKeyboardMarkup(
@@ -48,7 +48,7 @@ async def directions():
     keyboard = [[InlineKeyboardButton(text=direction.name, callback_data=f'reg.direction_{direction.id}')] for direction in direction]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
-async def group():
-    group = await get_group()
+async def group(course_id, direction_id):
+    group = await get_groups_by_course_and_direction(course_id, direction_id)
     keyboard = [[InlineKeyboardButton(text=group.name, callback_data=f'reg.group_{group.id}')] for group in group]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
