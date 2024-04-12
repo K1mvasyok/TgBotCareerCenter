@@ -49,6 +49,6 @@ async def group(course_id, direction_id):
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 async def ready(kurs_id):
-    keyboard = [[InlineKeyboardButton(text="✅ Готово", callback_data="kurs.ready")],
-                [InlineKeyboardButton(text="↩️ Написать еще раз", callback_data=f"mes.kurs.number_{kurs_id}")]]
+    keyboard = [[InlineKeyboardButton(text="✅ Готово", callback_data=f"kurs.ready_{kurs_id}")],
+                [InlineKeyboardButton(text="↩️ Написать еще раз", callback_data=f"kurs.number_{kurs_id}")]]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
