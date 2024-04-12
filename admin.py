@@ -47,20 +47,21 @@ async def Kurs_text_act(message: Message, state: FSMContext):
     await state.update_data(text=message.text)
     data = await state.get_data()
     kurs_id = data["kurs"]    
-    await message.answer(f'{data['text']}', reply_markup=await kb.ready(kurs_id))  
+    await message.answer(data["text"], reply_markup=await kb.ready(kurs_id))  
     
 @router_a.callback_query(F.data.startswith("kurs.ready_"))
 async def Kurs_ready_act(query: CallbackQuery, state: FSMContext):
     kurs_id = int(query.data.split("_")[1])
+    data = await state.get_data()
+    message_text = data["text"]
     users = await get_users_by_course(kurs_id)
-    await query.message.answer(users)
     if users:
-            message_text = query.message.text
-            await send_message_to_user(users, message_text)
+            for user in users:
+                await send_message_to_user(user.telegram_id, message_text)
             await query.message.answer("Сообщение успешно отправлено всем пользователям курса")
     else:
             await query.message.answer("На выбранный курс не подписан ни один пользователь")
-
+    await state.clear()
 
 # Работа для написания текста Группе
 
