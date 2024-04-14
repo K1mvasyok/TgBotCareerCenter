@@ -85,3 +85,10 @@ async def get_users_by_course(course_id):
             select(User).join(Group).filter(Group.course_id == course_id)
         )
         return users.scalars().all()
+    
+async def get_direction_by_course_id(course_id):
+    async with async_session as session:
+        streams = await session.execute(
+            select(Direction).join(Group).join(Course).filter(Course.id == course_id)
+        )
+        return streams.scalars().all()

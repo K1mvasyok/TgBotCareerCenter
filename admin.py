@@ -14,6 +14,11 @@ router_a = Router()
 class TextForKurs(StatesGroup):
     kurs = State()
     text = State()
+    
+class TextForPotok(StatesGroup):
+    kurs = State()
+    potok_id = State()
+    text = State()    
 
 @router_a.message(Command("commands"))
 async def Cmd_commands(message: Message):
@@ -63,8 +68,20 @@ async def Kurs_ready_act(query: CallbackQuery, state: FSMContext):
             await query.message.answer("На выбранный курс не подписан ни один пользователь")
     await state.clear()
 
-# Работа для написания текста Группе
+# Работа для написания текста Потоку
+@router_a.message(F.text == '🎓 Поток')
+async def Potok(message: Message, state: FSMContext):
+    if message.from_user.id == ADMIN_TELEGRAM_ID:
+        await message.answer(f'Чтобы выбрать поток, выберите курс', reply_markup=await kb.potok_kurs())  
+    else:
+        await message.answer("У вас нет прав на выполнение этой команды.")
 
+@router_a.callback_query(F.data.startswith("potok.kurs.number_"))
+async def Potok_bottons_act(query: CallbackQuery, state: FSMContext):
+    kurs_id = int(query.data.split("_")[1])
+    await state.update_data(kurs=kurs_id)        
+    await query.message.answer(f'Выберете поток', reply_markup=await kb.direction_for_curs(kurs_id))          
+        
 # Функция отправки сообщения пользователю
 async def send_message_to_user(user_id, message_text):
     bot = await get_bot()
