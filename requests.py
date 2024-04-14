@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, distinct, join
 from sqlalchemy.exc import IntegrityError
 from models import async_session
 
@@ -85,10 +85,37 @@ async def get_users_by_course(course_id):
             select(User).join(Group).filter(Group.course_id == course_id)
         )
         return users.scalars().all()
-    
+
 async def get_direction_by_course_id(course_id):
     async with async_session as session:
-        streams = await session.execute(
-            select(Direction).join(Group).join(Course).filter(Course.id == course_id)
+        # Выбираем уникальные направления для указанного курса
+        stmt = (
+            select(distinct(Group.direction_id))
+            .select_from(join(Group, Course).join(Direction))
+            .where(Course.id == course_id)
         )
+        result = await session.execute(stmt)
+        direction_ids = [row[0] for row in result]
+        
+        # Затем получаем сами объекты направлений по их идентификаторам
+        streams = await session.execute(select(Direction).where(Direction.id.in_(direction_ids)))
         return streams.scalars().all()
+    
+async def get_students_by_course_and_direction(course_id, direction_id):
+    async with async_session as session:
+        # Получаем идентификаторы групп для указанного курса и направления
+        group_ids = await session.scalar(
+            select(Group.id)
+            .join(Course)
+            .join(Direction)
+            .filter(Course.id == course_id, Direction.id == direction_id)
+        )
+
+        # Получаем студентов из этих групп
+        students = await session.execute(
+            select(User)
+            .join(Group)
+            .filter(Group.id.in_(group_ids))
+        )
+
+        return students.scalars().all()

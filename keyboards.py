@@ -48,7 +48,7 @@ async def group(course_id, direction_id):
     keyboard = [[InlineKeyboardButton(text=group.name, callback_data=f'reg.group_{group.id}')] for group in group]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
-async def ready(kurs_id):
+async def ready_kurs(kurs_id):
     keyboard = [[InlineKeyboardButton(text="✅ Готово", callback_data=f"kurs.ready_{kurs_id}")],
                 [InlineKeyboardButton(text="↩️ Написать еще раз", callback_data=f"kurs.number_{kurs_id}")]]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
@@ -66,4 +66,9 @@ async def potok_kurs():
 async def direction_for_curs(course_id):
     direction = await get_direction_by_course_id(course_id)
     keyboard = [[InlineKeyboardButton(text=direction.name, callback_data=f'potok.direction_{direction.id}')] for direction in direction]
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+async def ready_direction(direction_id):
+    keyboard = [[InlineKeyboardButton(text="✅ Готово", callback_data=f"potok.ready_{direction_id}")],
+                [InlineKeyboardButton(text="↩️ Написать еще раз", callback_data=f"potok.direction_{direction_id}")]]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)

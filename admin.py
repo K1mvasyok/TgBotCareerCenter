@@ -6,7 +6,7 @@ from aiogram.fsm.state import State, StatesGroup
 
 import keyboards as kb
 from config import ADMIN_TELEGRAM_ID
-from requests import get_users_by_course
+from requests import get_users_by_course, get_students_by_course_and_direction
 from run import get_bot
 
 router_a = Router()
@@ -43,16 +43,16 @@ async def Kurs(message: Message, state: FSMContext):
 @router_a.callback_query(F.data.startswith("kurs.number_"))
 async def Kurs_bottons_act(query: CallbackQuery, state: FSMContext):
     kurs_id = int(query.data.split("_")[1])
-    await state.update_data(kurs=kurs_id)
-    await state.set_state(TextForKurs.text)    
+    await state.update_data(kurs=kurs_id) 
     await query.message.answer(f'Введите сообщение для Курса')     
+    await state.set_state(TextForKurs.text)     
     
 @router_a.message(TextForKurs.text)
 async def Kurs_text_act(message: Message, state: FSMContext):
     await state.update_data(text=message.text)
     data = await state.get_data()
     kurs_id = data["kurs"]    
-    await message.answer(data["text"], reply_markup=await kb.ready(kurs_id))  
+    await message.answer(data["text"], reply_markup=await kb.ready_kurs(kurs_id))  
     
 @router_a.callback_query(F.data.startswith("kurs.ready_"))
 async def Kurs_ready_act(query: CallbackQuery, state: FSMContext):
@@ -81,6 +81,35 @@ async def Potok_bottons_act(query: CallbackQuery, state: FSMContext):
     kurs_id = int(query.data.split("_")[1])
     await state.update_data(kurs=kurs_id)        
     await query.message.answer(f'Выберете поток', reply_markup=await kb.direction_for_curs(kurs_id))          
+
+@router_a.callback_query(F.data.startswith("potok.direction_"))
+async def Potok_text_act(query: CallbackQuery, state: FSMContext):
+    potok = int(query.data.split("_")[1])
+    await state.update_data(potok_id=potok)       
+    await query.message.answer(f'Введите сообщение для Потока')
+    await state.set_state(TextForPotok.text)    
+
+@router_a.message(TextForPotok.text)
+async def Kurs_text_act(message: Message, state: FSMContext):
+    await state.update_data(text=message.text)
+    data = await state.get_data()
+    potok_id = data["potok_id"]  
+    await message.answer(data['text'], reply_markup=await kb.ready_direction(potok_id))   
+
+@router_a.callback_query(F.data.startswith("potok.ready_"))
+async def Potok_ready_act(query: CallbackQuery, state: FSMContext):
+    potok_id = int(query.data.split("_")[1])
+    data = await state.get_data()
+    message_text = data["text"]
+    course_id = data["kurs"]
+    users = await get_students_by_course_and_direction(course_id, potok_id)
+    if users:
+            for user in users:
+                await send_message_to_user(user.telegram_id, message_text)
+            await query.message.answer("Сообщение успешно отправлено всем пользователям курса")
+    else:
+            await query.message.answer("На выбранный курс не подписан ни один пользователь")
+    await state.clear()
         
 # Функция отправки сообщения пользователю
 async def send_message_to_user(user_id, message_text):
