@@ -104,12 +104,13 @@ async def get_direction_by_course_id(course_id):
 async def get_students_by_course_and_direction(course_id, direction_id):
     async with async_session as session:
         # Получаем идентификаторы групп для указанного курса и направления
-        group_ids = await session.scalar(
+        group_ids = await session.execute(
             select(Group.id)
             .join(Course)
             .join(Direction)
             .filter(Course.id == course_id, Direction.id == direction_id)
         )
+        group_ids = [row[0] for row in group_ids.fetchall()]
 
         # Получаем студентов из этих групп
         students = await session.execute(
@@ -117,5 +118,22 @@ async def get_students_by_course_and_direction(course_id, direction_id):
             .join(Group)
             .filter(Group.id.in_(group_ids))
         )
-
         return students.scalars().all()
+    
+async def get_group_by_course_and_direction(course_id, direction_id):
+    async with async_session as session:
+        groups = await session.execute(
+            select(Group)
+            .join(Course)
+            .join(Direction)
+            .filter(Course.id == course_id, Direction.id == direction_id)
+        )
+        return groups.scalars().all()
+    
+async def get_users_by_group_id(group_id):
+    async with async_session as session:
+        users = await session.execute(
+            select(User)
+            .filter(User.group_id == group_id)
+        )
+        return users.scalars().all()    

@@ -1,12 +1,12 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
-from requests import is_user_registered_db, get_direction, get_groups_by_course_and_direction, get_direction_by_course_id
+from requests import is_user_registered_db, get_direction, get_groups_by_course_and_direction, get_direction_by_course_id, get_group_by_course_and_direction
 
 async def menu_a():
     return ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text="📖 Курс"), KeyboardButton(text="📚 ")],
-            [KeyboardButton(text="🎓 Поток"), KeyboardButton(text="📅 ")],], 
+            [KeyboardButton(text="📖 Курс"), KeyboardButton(text="🎓 Поток ")],
+            [KeyboardButton(text="📚 Группа")]], 
         resize_keyboard=True, input_field_placeholder="Выберите пункт ниже")
 
 async def menu_u(user_id):
@@ -37,7 +37,6 @@ async def kurs_registration():
         InlineKeyboardButton(text="4 Курс", callback_data=f"reg.kurs.number_4")],
         [InlineKeyboardButton(text="🏡 Вернуться в меню", callback_data="return_to_menu")]]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
-
 async def directions():
     direction = await get_direction()
     keyboard = [[InlineKeyboardButton(text=direction.name, callback_data=f'reg.direction_{direction.id}')] for direction in direction]
@@ -53,7 +52,7 @@ async def ready_kurs(kurs_id):
                 [InlineKeyboardButton(text="↩️ Написать еще раз", callback_data=f"kurs.number_{kurs_id}")]]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
-# Клавиатура для выбора курса для потока
+# Клавиатурs для потока
 async def potok_kurs():
     buttons = [
         [InlineKeyboardButton(text="1 Курс", callback_data=f"potok.kurs.number_1"),
@@ -71,4 +70,29 @@ async def direction_for_curs(course_id):
 async def ready_direction(direction_id):
     keyboard = [[InlineKeyboardButton(text="✅ Готово", callback_data=f"potok.ready_{direction_id}")],
                 [InlineKeyboardButton(text="↩️ Написать еще раз", callback_data=f"potok.direction_{direction_id}")]]
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+# Клавиатуры для группы 
+async def kurs_group():
+    buttons = [
+        [InlineKeyboardButton(text="1 Курс", callback_data=f"group.number_1"),
+        InlineKeyboardButton(text="2 Курс", callback_data=f"group.number_2"),],
+        [InlineKeyboardButton(text="3 Курс", callback_data=f"group.number_3"),
+        InlineKeyboardButton(text="4 Курс", callback_data=f"group.number_4")],
+        [InlineKeyboardButton(text="🏡 Вернуться в меню", callback_data="return_to_menu")]]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+async def group_direction_for_curs(course_id):
+    direction = await get_direction_by_course_id(course_id)
+    keyboard = [[InlineKeyboardButton(text=direction.name, callback_data=f'group.direction_{direction.id}')] for direction in direction]
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+async def generate_group_keyboard(course_id, direction_id):
+    groups = await get_group_by_course_and_direction(course_id, direction_id)
+    keyboard = [[InlineKeyboardButton(group.name, callback_data=f"group.group_{group.id}")] for group in groups]
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+async def ready_group(group_id):
+    keyboard = [[InlineKeyboardButton(text="✅ Готово", callback_data=f"group.ready_{group_id}")],
+                [InlineKeyboardButton(text="↩️ Написать еще раз", callback_data=f"group.group_{group_id}")]]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)

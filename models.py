@@ -13,7 +13,7 @@ class Course(Base):
     __tablename__ = 'courses'
 
     id = Column(Integer, primary_key=True)
-    name = Column(Integer, unique=True)
+    name = Column(String, unique=True)
     
     groups = relationship("Group", back_populates="course")
 
