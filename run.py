@@ -1,5 +1,4 @@
 import asyncio
-import logging
 
 from aiogram import Bot, Dispatcher
 from config import TOKEN
@@ -22,7 +21,6 @@ async def get_bot():
     return Bot(token=TOKEN, parse_mode='HTML')
     
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
     try:
         asyncio.run(async_main())
         asyncio.run(main())
