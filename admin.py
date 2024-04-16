@@ -5,8 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
 import keyboards as kb
-from config import ADMIN_TELEGRAM_ID
-from requests import get_users_by_course, get_students_by_course_and_direction, get_users_by_group_id
+from requests import is_admin, add_admin, get_users_by_course, get_students_by_course_and_direction, get_users_by_group_id
 from run import get_bot
 
 router_a = Router()
@@ -26,22 +25,14 @@ class TextForGroup(StatesGroup):
     group_id = State()    
     text = State()       
 
-@router_a.message(Command("commands"))
-async def Cmd_commands(message: Message):
-    if message.from_user.id == ADMIN_TELEGRAM_ID:
-        await message.answer(f'Привет 👋🏼,\nЯ - чат-бот \n\n'
-                             f'Через меня можно написать ?сообщение?: \n\n'
-                             f'• Курсу\n\n'
-                             f'• Потоку\n\n'
-                             f'• Или конкретной группе\n\n')
-        await message.answer(f'🔮 Главное меню', reply_markup=await kb.menu_a())
-    else:
-        await message.answer("У вас нет прав на выполнение этой команды.")
+class AddAdmin(StatesGroup):
+    telegram_id = State()
 
 # Работа для написания текста Курсу
 @router_a.message(F.text == '📖 Курс')
 async def Kurs(message: Message, state: FSMContext):
-    if message.from_user.id == ADMIN_TELEGRAM_ID:
+    user_id = message.from_user.id
+    if await is_admin(user_id):
         await message.answer(f'Выберите курс которому вы бы хотели написать', reply_markup=await kb.kurs())  
     else:
         await message.answer("У вас нет прав на выполнение этой команды.")
@@ -77,7 +68,8 @@ async def Kurs_ready_act(query: CallbackQuery, state: FSMContext):
 # Работа для написания текста Потоку
 @router_a.message(F.text == '🎓 Поток')
 async def Potok(message: Message, state: FSMContext):
-    if message.from_user.id == ADMIN_TELEGRAM_ID:
+    user_id = message.from_user.id
+    if await is_admin(user_id):
         await message.answer(f'Чтобы выбрать поток, выберите курс', reply_markup=await kb.potok_kurs())  
     else:
         await message.answer("У вас нет прав на выполнение этой команды.")
@@ -120,7 +112,8 @@ async def Potok_ready_act(query: CallbackQuery, state: FSMContext):
 # Работа для написания текста Группе
 @router_a.message(F.text == '📚 Группа')
 async def Group(message: Message, state: FSMContext):
-    if message.from_user.id == ADMIN_TELEGRAM_ID:
+    user_id = message.from_user.id
+    if await is_admin(user_id):
         await message.answer(f'Чтобы выбрать группу, выберите курс', reply_markup=await kb.kurs_group())  
     else:
         await message.answer("У вас нет прав на выполнение этой команды.")
@@ -133,10 +126,11 @@ async def Group_bottons_act(query: CallbackQuery, state: FSMContext):
 
 @router_a.callback_query(F.data.startswith("group.direction_"))
 async def Group_2bot_act(query: CallbackQuery, state: FSMContext):
-    potok = int(query.data.split("_")[1])
+    potok = query.data.split("_")[1]
     await state.update_data(potok_id=potok) 
     data = await state.get_data()
-    kurs = data["kurs"]      
+    kurs = data["kurs"]
+    # await query.message.answer(kurs)      
     await query.message.answer(f'Выберете группу', reply_markup=await kb.generate_group_keyboard(kurs, potok))     
     
 @router_a.callback_query(F.data.startswith("group.group_"))
@@ -176,3 +170,25 @@ async def send_message_to_user(user_id, message_text):
     except Exception as e:
         print(f"Не удалось отправить сообщение пользователю с ID {user_id}: {e}")
         return False   
+
+# Добавление нового администратора 
+@router_a.message(F.text == '📌 Добавление нового администратора')
+async def Admin(message: Message, state: FSMContext):
+    user_id = message.from_user.id
+    if await is_admin(user_id):
+        await message.answer(f'Чтобы добавить администратора, нужен телеграмм id\n\nУзнать телеграмм id пользователя можно через бота @userinfobot\n\nДалее - отравьте 9 символов id аккаунта')  
+        await state.set_state(AddAdmin.telegram_id) 
+    else:
+        await message.answer("У вас нет прав на выполнение этой команды.")
+        
+@router_a.message(AddAdmin.telegram_id)
+async def Add_admin(message: Message, state: FSMContext):
+    telegram_id = message.text
+    if int(len(telegram_id)) == 9:
+        result = await add_admin(telegram_id)
+        if result:
+            await message.answer(f"Новый администратор успешно добавлен в базу данных", reply_markup= await kb.menu_a())
+        else:
+            await message.answer(f"Администратор с таким Telegram ID уже существует", reply_markup= await kb.menu_a())
+    else:
+        await message.answer(f"Ошибка при добавлении администратора", reply_markup= await kb.menu_a())

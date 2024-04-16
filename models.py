@@ -21,7 +21,7 @@ class Direction(Base):
     __tablename__ = 'directions'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
+    name = Column(String)
     
     groups = relationship("Group", back_populates="direction")
 
@@ -45,6 +45,13 @@ class User(Base):
     group_id = Column(Integer, ForeignKey('groups.id'))
     
     group = relationship("Group", back_populates="users")
+
+class Admin(Base):
+    __tablename__ = 'admins'
+
+    id = Column(Integer, primary_key=True)
+    telegram_id = Column(BigInteger)
+
 
 async def async_main():
     async with engine.begin() as conn:

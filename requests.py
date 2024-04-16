@@ -2,7 +2,7 @@ from sqlalchemy import select, distinct, join
 from sqlalchemy.exc import IntegrityError
 from models import async_session
 
-from models import User, Direction, Group, Course
+from models import User, Direction, Group, Course, Admin
 
 async def is_user_registered_db(telegram_id):
     async with async_session as session:
@@ -13,6 +13,16 @@ async def is_user_registered_db(telegram_id):
 async def save_new_user(telegram_id, course_id, direction_id, group_id):
     async with async_session as session:
         try:
+            # Проверяем, существует ли пользователь с таким telegram_id
+            existing_user = await session.execute(select(User).filter(User.telegram_id == telegram_id))
+            existing_user = existing_user.scalar_one_or_none()
+
+            # Если пользователь существует, обновляем его данные
+            if existing_user:
+                existing_user.group_id = group_id
+                await session.commit()
+                return True
+
             # Проверяем существование курса, направления и группы
             course = await session.get(Course, course_id)
             direction = await session.get(Direction, direction_id)
@@ -23,12 +33,12 @@ async def save_new_user(telegram_id, course_id, direction_id, group_id):
                 new_user = User(telegram_id=telegram_id, group_id=group_id)
                 session.add(new_user)
                 await session.commit()
-                return True, "Пользователь успешно сохранен"
+                return True
             else:
-                return False, "Курс, направление или группа не найдены"
+                return False
         except IntegrityError:
             await session.rollback()
-            return False, "Пользователь с таким телеграм ID уже существует"
+            return False
         
 async def get_user_data(telegram_id):
     async with async_session as session:
@@ -137,3 +147,29 @@ async def get_users_by_group_id(group_id):
             .filter(User.group_id == group_id)
         )
         return users.scalars().all()    
+    
+# Проверка на администратора 
+async def is_admin(user_id):
+    async with async_session as session:
+        # Получаем список всех идентификаторов администраторов из базы данных
+        query = select(Admin.telegram_id)
+        result = await session.execute(query)
+        admin_ids = [row[0] for row in result.all()]
+        # Проверяем, является ли идентификатор пользователя администратором
+        return user_id in admin_ids
+
+# Сохранение администратора
+async def add_admin(telegram_id):
+    async with async_session as session:
+        try:
+            # Создаем новую запись администратора
+            new_admin = Admin(telegram_id=telegram_id)
+            session.add(new_admin)
+            # Применяем изменения к базе данных
+            await session.commit()
+            return True  # Успешно добавлен администратор
+        except IntegrityError:
+            # Обработка случая, когда администратор с таким telegram_id уже существует
+            await session.rollback()
+            return False  # Администратор с таким telegram_id уже существу
+    
