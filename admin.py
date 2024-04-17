@@ -176,7 +176,7 @@ async def send_message_to_user(user_id, message_text):
 async def Admin(message: Message, state: FSMContext):
     user_id = message.from_user.id
     if await is_admin(user_id):
-        await message.answer(f'Чтобы добавить администратора, нужен телеграмм id\n\nУзнать телеграмм id пользователя можно через бота @userinfobot\n\nДалее - отравьте 9 символов id аккаунта')  
+        await message.answer(f'Чтобы добавить администратора, нужен телеграмм id\n\nУзнать телеграмм id пользователя можно через бота @userinfobot\n\nДалее - отравьте 9-10 символов id аккаунта')  
         await state.set_state(AddAdmin.telegram_id) 
     else:
         await message.answer("У вас нет прав на выполнение этой команды.")
@@ -184,7 +184,7 @@ async def Admin(message: Message, state: FSMContext):
 @router_a.message(AddAdmin.telegram_id)
 async def Add_admin(message: Message, state: FSMContext):
     telegram_id = message.text
-    if int(len(telegram_id)) == 9:
+    if int(len(telegram_id)) == 9 or int(len(telegram_id)) == 10:
         result = await add_admin(telegram_id)
         if result:
             await message.answer(f"Новый администратор успешно добавлен в базу данных", reply_markup= await kb.menu_a())
