@@ -1,4 +1,4 @@
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -6,7 +6,6 @@ from aiogram.fsm.state import State, StatesGroup
 
 import keyboards as kb
 from requests import is_admin, add_admin, get_users_by_course, get_students_by_course_and_speciality, get_users_by_group_id
-from run import get_bot
 
 router_a = Router()
 
@@ -59,7 +58,7 @@ async def Kurs_ready_act(query: CallbackQuery, state: FSMContext):
     users = await get_users_by_course(kurs_id)
     if users:
         for user in users:
-            await send_message_to_user(user.telegram_id, message_text)
+            await send_message_to_user(query.bot, user.telegram_id, message_text) # Передаем query.bot
         await query.message.answer("Сообщение успешно отправлено всем пользователям курса")
     else:
         await query.message.answer("На выбранный курс не подписан ни один пользователь")
@@ -103,14 +102,14 @@ async def Potok_ready_act(query: CallbackQuery, state: FSMContext):
     users = await get_students_by_course_and_speciality(course_id, potok_id)
     if users:
         for user in users:
-            await send_message_to_user(user.telegram_id, message_text)
+            await send_message_to_user(query.bot, user.telegram_id, message_text) # Передаем query.bot
         await query.message.answer("Сообщение успешно отправлено всем пользователям потока")
     else:
         await query.message.answer("На выбранный курс не подписан ни один пользователь")
     await state.clear()
 
 # Работа для написания текста Группе
-@router_a.message(F.text == ' Группа')
+@router_a.message(F.text == '📚 Группа')
 async def Group(message: Message, state: FSMContext):
     user_id = message.from_user.id
     if await is_admin(user_id):
@@ -154,15 +153,14 @@ async def Group_ready_act(query: CallbackQuery, state: FSMContext):
     users = await get_users_by_group_id(group_id)
     if users:
         for user in users:
-            await send_message_to_user(user.telegram_id, message_text)
+            await send_message_to_user(query.bot, user.telegram_id, message_text)
         await query.message.answer("Сообщение успешно отправлено всем пользователям группы")
     else:
         await query.message.answer("На выбранный курс не подписан ни один пользователь")
     await state.clear()
 
 # Функция отправки сообщения пользователю
-async def send_message_to_user(user_id, message_text):
-    bot = await get_bot()
+async def send_message_to_user(bot: Bot, user_id, message_text):
     try:
         await bot.send_message(user_id, message_text)
         return True

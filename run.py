@@ -14,12 +14,10 @@ async def main():
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(handlers.router_u)
+    admin.router_a.bot = bot
     dp.include_router(admin.router_a)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
-
-async def get_bot():
-    return Bot(token=TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
 
 if __name__ == '__main__':
     try:

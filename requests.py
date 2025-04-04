@@ -10,7 +10,7 @@ async def is_user_registered_db(telegram_id):
         result = await session.execute(query)
         return result.scalar() is not None
 
-async def save_new_user(telegram_id, course_id, speciality_id, group_id):
+async def save_new_user(telegram_id, course_id, group_id):
     async with async_session as session:
         try:
             existing_user = await session.execute(select(User).filter(User.telegram_id == telegram_id))
@@ -22,10 +22,9 @@ async def save_new_user(telegram_id, course_id, speciality_id, group_id):
                 return True
 
             course = await session.get(Course, course_id)
-            speciality = await session.get(Speciality, speciality_id)
             group = await session.get(Group, group_id)
 
-            if course and speciality and group:
+            if course and group:
                 new_user = User(telegram_id=telegram_id, group_id=group_id)
                 session.add(new_user)
                 await session.commit()
@@ -157,3 +156,10 @@ async def add_admin(telegram_id):
         except IntegrityError:
             await session.rollback()
             return False
+
+async def get_groups_by_course(course_id):
+    async with async_session as session:
+        groups = await session.execute(
+            select(Group).filter(Group.course_id == course_id)
+        )
+        return groups.scalars().all()
